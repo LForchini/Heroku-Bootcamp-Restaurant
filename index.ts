@@ -136,7 +136,9 @@ app.put(
           restaurant.image = req.body.image;
         }
         restaurant.save().then(() => {
-          res.send(restaurant);
+          restaurant.reload().then(() => {
+            res.send(restaurant);
+          });
         });
       } else {
         res.sendStatus(404);
