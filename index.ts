@@ -60,7 +60,7 @@ async function loadSeed() {
 
 app.listen(PORT, () => {
   console.log(
-    `Server started listening at http://restaurants-express.herokuapp.com:${PORT}`
+    `Server started listening at http://restaurants-express.herokuapp.com/`
   );
   loadSeed().then(() => {
     console.log(`Server loaded seed database values`);
