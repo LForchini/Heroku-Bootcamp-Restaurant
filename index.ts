@@ -77,13 +77,12 @@ app.get("/flipcoin", (req: Request, res: Response) => {
 });
 
 app.get("/restaurants", (req: Request, res: Response) => {
-  console.log(`Revieved connection`);
   Restaurant.findAll().then((restaurants) => {
     res.send(restaurants);
   });
 });
 
-app.get("/restaurant/:id", (req: Request, res: Response) => {
+app.get("/restaurants/:id", (req: Request, res: Response) => {
   Restaurant.findByPk(req.params.id, { include: [Menu] }).then((restaurant) => {
     if (restaurant) {
       res.send(restaurant);
@@ -118,7 +117,7 @@ app.post(
   }
 );
 
-app.delete("/restaurant/:id", (req: Request, res: Response) => {
+app.delete("/restaurants/:id", (req: Request, res: Response) => {
   Restaurant.findByPk(req.params.id).then((restaurant) => {
     if (restaurant) {
       restaurant.destroy().then(() => {
@@ -131,7 +130,7 @@ app.delete("/restaurant/:id", (req: Request, res: Response) => {
 });
 
 app.put(
-  "/restaurant/:id",
+  "/restaurants/:id",
   [
     check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
     check("image").isURL().trim(),
