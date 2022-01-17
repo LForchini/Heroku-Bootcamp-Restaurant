@@ -126,23 +126,22 @@ app.put(
     check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
     check("image").isURL().trim(),
   ],
-  (req: Request, res: Response) => {
-    Restaurant.findByPk(req.params.id).then((restaurant) => {
-      if (restaurant) {
-        if (req.body.name) {
-          restaurant.name = req.body.name;
-        }
-        if (req.body.image) {
-          restaurant.image = req.body.image;
-        }
-        restaurant.save().then(() => {
-          restaurant.reload().then(() => {
-            res.send(restaurant);
-          });
-        });
-      } else {
-        res.sendStatus(404);
+  async (req: Request, res: Response) => {
+    const restaurant: Restaurant | null = await Restaurant.findByPk(
+      req.params.id
+    );
+    if (restaurant) {
+      if (req.body.name) {
+        restaurant.name = req.body.name;
       }
-    });
+      if (req.body.image) {
+        restaurant.image = req.body.image;
+      }
+      await restaurant.save();
+      await restaurant.reload();
+      res.send(restaurant);
+    } else {
+      res.sendStatus(404);
+    }
   }
 );
