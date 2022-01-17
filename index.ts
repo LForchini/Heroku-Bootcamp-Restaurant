@@ -138,7 +138,6 @@ app.put(
         restaurant.image = req.body.image;
       }
       await restaurant.save();
-      await restaurant.reload();
       res.send(restaurant);
     } else {
       res.sendStatus(404);
