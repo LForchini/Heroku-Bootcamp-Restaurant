@@ -8,6 +8,7 @@ import { check, validationResult } from "express-validator";
 const app = express();
 const PORT: string | number = process.env.PORT || 3000;
 
+// app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
