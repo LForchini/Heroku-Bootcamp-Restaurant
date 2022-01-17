@@ -60,7 +60,7 @@ async function loadSeed() {
 
 app.listen(PORT, () => {
   console.log(
-    `Server started listening at http://restaurants-express.herokuapp.com/:${PORT}`
+    `Server started listening at http://restaurants-express.herokuapp.com:${PORT}`
   );
   loadSeed().then(() => {
     console.log(`Server loaded seed database values`);
@@ -77,6 +77,7 @@ app.get("/flipcoin", (req: Request, res: Response) => {
 });
 
 app.get("/restaurants", (req: Request, res: Response) => {
+  console.log(`Revieved connection`);
   Restaurant.findAll().then((restaurants) => {
     res.send(restaurants);
   });
