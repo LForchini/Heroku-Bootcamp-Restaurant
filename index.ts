@@ -67,15 +67,6 @@ app.listen(PORT, () => {
   });
 });
 
-app.get("/now", (req: Request, res: Response) => {
-  const date: Date = new Date();
-  res.send(date);
-});
-
-app.get("/flipcoin", (req: Request, res: Response) => {
-  res.send(Math.random() > 0.5 ? "heads" : "tails");
-});
-
 app.get("/restaurants", (req: Request, res: Response) => {
   Restaurant.findAll().then((restaurants) => {
     res.send(restaurants);
