@@ -67,20 +67,21 @@ app.listen(PORT, () => {
   });
 });
 
-app.get("/restaurants", (req: Request, res: Response) => {
-  Restaurant.findAll().then((restaurants) => {
-    res.send(restaurants);
-  });
+app.get("/restaurants", async (req: Request, res: Response) => {
+  const restaurants: Restaurant[] = await Restaurant.findAll();
+  res.send(restaurants);
 });
 
-app.get("/restaurants/:id", (req: Request, res: Response) => {
-  Restaurant.findByPk(req.params.id, { include: [Menu] }).then((restaurant) => {
-    if (restaurant) {
-      res.send(restaurant);
-    } else {
-      res.sendStatus(404);
-    }
-  });
+app.get("/restaurants/:id", async (req: Request, res: Response) => {
+  const restaurant: Restaurant | null = await Restaurant.findByPk(
+    req.params.id,
+    { include: [Menu] }
+  );
+  if (restaurant) {
+    res.send(restaurant);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
 app.post(
@@ -90,7 +91,7 @@ app.post(
     check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
     check("image").isURL().trim(),
   ],
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const raw_restaurant: RestaurantObj = req.body;
 
     const errors = validationResult(req);
@@ -102,22 +103,21 @@ app.post(
       name: raw_restaurant.name,
       image: raw_restaurant.image,
     });
-    restaurant.save().then(() => {
-      res.send(restaurant);
-    });
+    await restaurant.save();
+    res.send(restaurant);
   }
 );
 
-app.delete("/restaurants/:id", (req: Request, res: Response) => {
-  Restaurant.findByPk(req.params.id).then((restaurant) => {
-    if (restaurant) {
-      restaurant.destroy().then(() => {
-        res.sendStatus(204);
-      });
-    } else {
-      res.sendStatus(404);
-    }
-  });
+app.delete("/restaurants/:id", async (req: Request, res: Response) => {
+  const restaurant: Restaurant | null = await Restaurant.findByPk(
+    req.params.id
+  );
+  if (restaurant) {
+    await restaurant.destroy();
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
 app.put(
