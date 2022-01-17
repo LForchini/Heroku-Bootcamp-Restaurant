@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "This repo is structured so that each branch either represents a day of work, or a multi-day project.",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "tsc",
-    "watch-node": "nodemon index.js",
+    "start": "node index.ts",
+    "postinstall": "",
+    "watch-node": "nodemon index.ts",
     "watch-ts": "tsc -w",
     "deploy": "git add . && git commit -m Heroku && git push heroku main"
   },
