@@ -112,7 +112,7 @@ app.post(
       image: raw_restaurant.image,
     });
     restaurant.save().then(() => {
-      res.sendStatus(201);
+      res.send(restaurant);
     });
   }
 );
@@ -145,7 +145,7 @@ app.put(
           restaurant.image = req.body.image;
         }
         restaurant.save().then(() => {
-          res.sendStatus(204);
+          res.send(restaurant);
         });
       } else {
         res.sendStatus(404);
