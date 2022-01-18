@@ -2,8 +2,11 @@ import Menu from "./src/models/Menu.model";
 import MenuItem from "./src/models/MenuItem.model";
 import Restaurant from "./src/models/Restaurant.model";
 import { sequelize } from "./src/sequelize";
-import express, { Request, Response } from "express";
-import { check, validationResult } from "express-validator";
+import express from "express";
+
+import RestaurantRoute from "./src/routes/Restuaurant.route";
+import MenuRoute from "./src/routes/Menu.route";
+import MenuItemRoute from "./src/routes/MenuItem.route";
 
 const app = express();
 const PORT: string | number = process.env.PORT || 3000;
@@ -11,6 +14,10 @@ const PORT: string | number = process.env.PORT || 3000;
 // app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use("/restaurants", RestaurantRoute);
+app.use("/menus", MenuRoute);
+app.use("/items", MenuItemRoute);
 
 interface RestaurantObj {
   name: string;
@@ -59,88 +66,8 @@ async function loadSeed() {
 }
 
 app.listen(PORT, () => {
-  console.log(
-    `Server started listening at http://restaurants-express.herokuapp.com/`
-  );
+  console.log(`Server started listening on port ${PORT}`);
   loadSeed().then(() => {
     console.log(`Server loaded seed database values`);
   });
 });
-
-app.get("/restaurants", async (req: Request, res: Response) => {
-  const restaurants: Restaurant[] = await Restaurant.findAll();
-  res.send(restaurants);
-});
-
-app.get("/restaurants/:id", async (req: Request, res: Response) => {
-  const restaurant: Restaurant | null = await Restaurant.findByPk(
-    req.params.id,
-    { include: [Menu] }
-  );
-  if (restaurant) {
-    res.send(restaurant);
-  } else {
-    res.sendStatus(404);
-  }
-});
-
-app.post(
-  "/restaurants",
-  [
-    check("name").not().isEmpty().trim().escape(),
-    check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
-    check("image").isURL().trim(),
-  ],
-  async (req: Request, res: Response) => {
-    const raw_restaurant: RestaurantObj = req.body;
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const restaurant: Restaurant = new Restaurant({
-      name: raw_restaurant.name,
-      image: raw_restaurant.image,
-    });
-    await restaurant.save();
-    res.send(restaurant);
-  }
-);
-
-app.delete("/restaurants/:id", async (req: Request, res: Response) => {
-  const restaurant: Restaurant | null = await Restaurant.findByPk(
-    req.params.id
-  );
-  if (restaurant) {
-    await restaurant.destroy();
-    res.sendStatus(204);
-  } else {
-    res.sendStatus(404);
-  }
-});
-
-app.put(
-  "/restaurants/:id",
-  [
-    check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
-    check("image").isURL().trim(),
-  ],
-  async (req: Request, res: Response) => {
-    const restaurant: Restaurant | null = await Restaurant.findByPk(
-      req.params.id
-    );
-    if (restaurant) {
-      if (req.body.name) {
-        restaurant.name = req.body.name;
-      }
-      if (req.body.image) {
-        restaurant.image = req.body.image;
-      }
-      await restaurant.save();
-      res.send(restaurant);
-    } else {
-      res.sendStatus(404);
-    }
-  }
-);
