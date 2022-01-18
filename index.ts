@@ -16,8 +16,8 @@ app.use("/menus", MenuRoute);
 app.use("/items", MenuItemRoute);
 
 app.listen(PORT, () => {
-  console.log(`Server started listening on port ${PORT}`);
+  console.log(`Started listening on port ${PORT}`);
   loadSeed().then(() => {
-    console.log(`Server loaded seed database values`);
+    console.log(`Loaded seed database values`);
   });
 });
