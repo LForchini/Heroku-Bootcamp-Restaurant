@@ -58,7 +58,7 @@
 
             let html = "";
             for (let i = 0; i < relevantMenus.length; i++) {
-                html += `<li id="${relevantMenus[i].id}" onclick="menuClicked(this.id)">${relevantMenus[i].title} <ul id="${relevantMenus[i].id}-items">CLICK FOR MENU ITEMS</ul> </li>`
+                html += `<li id="${relevantMenus[i].id}" onclick="menuClicked(this.id);event.cancelBubble=true;">${relevantMenus[i].title} <ul id="${relevantMenus[i].id}-items">CLICK FOR MENU ITEMS</ul> </li>`
             }
             document.getElementById(`${clickedId}-menus`).innerHTML = html;
         }
