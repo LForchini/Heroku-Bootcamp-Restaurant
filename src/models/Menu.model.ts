@@ -29,6 +29,9 @@ export default class Menu extends Model {
   @Column(DataType.TEXT)
   title!: string;
 
+  @Column(DataType.INTEGER)
+  positionId!: number;
+
   @HasMany(() => MenuItem)
   items!: MenuItem[];
 }

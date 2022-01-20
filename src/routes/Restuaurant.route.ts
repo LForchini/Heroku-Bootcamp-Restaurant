@@ -17,7 +17,7 @@ interface MenuItemObj {
   price: number;
 }
 
-const router = express.Router();
+const router = express.Router({mergeParams: true});
 
 router.get("/", async (req: Request, res: Response) => {
   const restaurants: Restaurant[] = await Restaurant.findAll();
@@ -96,5 +96,15 @@ router.put(
     }
   }
 );
+
+router.put(":restaurantId/menus");
+router.put(":restaurantId/menus/:menuId");
+router.put(":restaurantId/menus/:menuId/items");
+router.put(":restaurantId/menus/:menuId/items/:itemId");
+router.put(":restaurantId/items");
+router.put(":restaurantId/items/:itemId");
+
+
+
 
 export = router;

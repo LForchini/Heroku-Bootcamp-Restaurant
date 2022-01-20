@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import MenuItem from "../models/MenuItem.model";
 import { check, validationResult } from "express-validator";
+import Menu from "../models/Menu.model";
 
 interface MenuItemObj {
   name: string;
@@ -42,10 +43,16 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // One greater than the previous largest positionId
+    const positionId = ((await Menu.findByPk(raw_item.menuId))?.items
+      .map((item: MenuItem) => item.positionId)
+      .reduce((p: number, c: number) => Math.max(p, c)) || 0) + 1;
+
     const item = new MenuItem({
       name: raw_item.name,
       price: raw_item.price,
       menuId: raw_item.menuId,
+      positionId: positionId
     });
     await item.save();
     res.send(item);

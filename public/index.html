@@ -1,15 +1,84 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
-    <title>My Website</title>
 
+<head>
+
+    <title>Handlebars Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"
+        integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
 
-  <body>
-    <h1>Hello, World!</h1>
+</head>
 
-    <a href="about.html">About Me!</a>
-  </body>
+<body>
+
+    <div id="root" class="restaurant-container"></div>
+
+    <script id="restaurant-template" type="text/x-handlebars-template">
+        <div class="restaurant-box" id="{{id}}" onclick=restaurantClicked(this.id)>
+            <div class="item-text">
+                <h1>{{name}}</h1>
+                <ul id="{{id}}-menus">
+                    CLICK FOR MORE INFORMATION
+                </ul>
+            </div>
+            
+            <img src={{image}} width=200 height=200>
+        </div>
+    </script>
+
+    <script>
+        const restaurant_template_source = document.getElementById("restaurant-template").innerHTML;
+        const template = Handlebars.compile(restaurant_template_source);
+
+        fetch("/restaurants").then((response) => {
+            response.json().then(contexts => {
+                let html = "";
+                for (let i = 0; i < contexts.length; i++) {
+                    html += template(contexts[i]);
+                }
+
+                document.getElementById("root").innerHTML = html;
+            });
+        });
+
+        let menus = [];
+        async function restaurantClicked(clickedId) {
+            console.log("Restaurant clicked", clickedId);
+
+            // implement extremely basic caching
+            if (menus.length === 0) {
+                const response = await fetch("/menus");
+                menus = await response.json();
+            }
+
+            const relevantMenus = menus.filter((value) => { return value.restaurantId.toString() === clickedId });
+
+            let html = "";
+            for (let i = 0; i < relevantMenus.length; i++) {
+                html += `<li id="${relevantMenus[i].id}" onclick="menuClicked(this.id)">${relevantMenus[i].title} <ul id="${relevantMenus[i].id}-items">CLICK FOR MENU ITEMS</ul> </li>`
+            }
+            document.getElementById(`${clickedId}-menus`).innerHTML = html;
+        }
+
+        async function menuClicked(clickedId) {
+            console.log("Menu clicked", clickedId);
+
+            const response = await fetch(`/menus/${clickedId}`);
+            const items = (await response.json()).items;
+
+            let html = "";
+
+            for (let i = 0; i < items.length; i++) {
+                html += `<li>${items[i].name} - £${items[i].price}</li>`;
+            }
+            document.getElementById(`${clickedId}-items`).innerHTML = html;
+        }
+
+    </script>
+
+</body>
+
 </html>

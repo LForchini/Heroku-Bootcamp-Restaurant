@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import Menu from "../models/Menu.model";
 import { check, validationResult } from "express-validator";
 import MenuItem from "../models/MenuItem.model";
+import MenuItemRoute from "./MenuItem.route";
+import Restaurant from "../models/Restaurant.model";
 
 interface MenuObj {
   title: string;
@@ -14,15 +16,20 @@ interface MenuItemObj {
   menuId: number;
 }
 
-const router = express.Router();
+
+
+const router = express.Router({mergeParams: true});
 
 router.get("/", async (req: Request, res: Response) => {
-  const menus = await Menu.findAll();
+  const options = {}
+  const menus = await Menu.findAll({where: options});
+  
   res.send(menus);
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
-  const menu = await Menu.findByPk(req.params.id, { include: [MenuItem] });
+  const options = {id: req.params.id};
+  const menu = await Menu.findOne({ include: [MenuItem], where: options });
   if (menu) {
     res.send(menu);
   } else {
@@ -43,11 +50,17 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const raw_menu: MenuObj = req.body;
+
+    // One greater than the previous largest positionId
+    const positionId = ((await Restaurant.findByPk(raw_menu.restaurantId))?.menus
+      .map((menu: Menu) => menu.positionId)
+      .reduce((p: number, c: number) => Math.max(p, c)) || 0) + 1;
+
     const menu = new Menu({
       title: raw_menu.title,
       restaurantId: raw_menu.restaurantId,
+      positionId: positionId,
     });
     await menu.save();
     res.send(menu);
@@ -55,7 +68,8 @@ router.post(
 );
 
 router.delete("/:id", async (req: Request, res: Response) => {
-  const menu = await Menu.findByPk(req.params.id);
+  const options = {id: req.params.id};
+  const menu = await Menu.findOne({ include: [MenuItem], where: options });
   if (menu) {
     await menu.destroy();
     res.sendStatus(204);
@@ -74,7 +88,8 @@ router.put(
     }
 
     const raw_menu: MenuObj = req.body;
-    const menu: Menu | null = await Menu.findByPk(req.params.id);
+    const options = {id: req.params.id};
+    const menu = await Menu.findOne({ include: [MenuItem], where: options });
     if (menu) {
       menu.title = raw_menu.title;
       await menu.save();

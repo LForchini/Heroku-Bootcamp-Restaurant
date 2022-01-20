@@ -28,5 +28,8 @@ export default class MenuItem extends Model {
   name!: string;
 
   @Column(DataType.INTEGER)
+  positionId!: number;
+
+  @Column(DataType.INTEGER)
   price!: number;
 }

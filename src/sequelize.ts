@@ -43,20 +43,20 @@ async function loadSeed() {
     });
     await restaurant.save();
 
-    restaurant_obj.menus.forEach(async (menu_obj: MenuObj) => {
+    restaurant_obj.menus.forEach(async (menu_obj: MenuObj, menu_index: number) => {
       const menu = new Menu({
         title: menu_obj.title,
         restaurantId: restaurant.id,
-        restaurant: restaurant,
+        positionId: menu_index + 1
       });
       await menu.save();
 
-      menu_obj.items.forEach(async (menuItem_obj: MenuItemObj) => {
+      menu_obj.items.forEach(async (menuItem_obj: MenuItemObj, item_index: number) => {
         const menuItem = new MenuItem({
           name: menuItem_obj.name,
           price: menuItem_obj.price,
           menuId: menu.id,
-          menu: menu,
+          positionId: item_index + 1
         });
         await menuItem.save();
       });
