@@ -17,26 +17,30 @@
     <div id="root" class="restaurant-container"></div>
 
     <script id="restaurant-template" type="text/x-handlebars-template">
-        <div class="restaurant-box" id="{{id}}" onclick=restaurantClicked(this.id)>
+        {{#each restaurants}}
+        <div class="restaurant-box" id="{{this.id}}" onclick=restaurantClicked(this.id)>
             <div class="item-text">
                 <h1>{{name}}</h1>
-                <ul id="{{id}}-menus">
+                <ul id="{{this.id}}-menus">
                     CLICK FOR MORE INFORMATION
                 </ul>
             </div>
             
-            <img src={{image}} width=200 height=200>
+            <img src={{this.image}} width=200 height=200>
         </div>
+        {{/each}}
     </script>
 
     <script id="menu-template" type="text/x-handlebars-template">
-        <li class="menu-box" id="{{id}}" onclick="menuClicked(this.id); event.cancelBubble=true;">
+        {{#each menus}}
+        <li class="menu-box" id="{{this.id}}" onclick="menuClicked(this.id); event.cancelBubble=true;">
             {{title}}
 
-            <ul id="{{id}}-items">
+            <ul id="{{this.id}}-items">
                 CLICK FOR DETAILED MENU
             </ul>
         </li>
+        {{/each}}
     </script>
 
     <script>
@@ -45,11 +49,7 @@
 
         fetch("/restaurants").then((response) => {
             response.json().then(contexts => {
-                let html = "";
-                for (let i = 0; i < contexts.length; i++) {
-                    html += restaurant_template(contexts[i]);
-                }
-
+                const html = restaurant_template({ restaurants: contexts });
                 document.getElementById("root").innerHTML = html;
             });
         });
@@ -69,10 +69,8 @@
                 const menu_template_source = document.getElementById("menu-template").innerHTML;
                 const menu_template = Handlebars.compile(menu_template_source);
 
-                let html = "";
-                for (let i = 0; i < relevantMenus.length; i++) {
-                    html += menu_template(relevantMenus[i]);
-                }
+                const html = menu_template({ menus: relevantMenus });
+
                 document.getElementById(`${clickedId}-menus`).innerHTML = html;
             } else {
                 document.getElementById(`${clickedId}-menus`).innerText = "CLICK FOR MORE INFORMATION"
