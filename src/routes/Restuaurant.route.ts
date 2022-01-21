@@ -20,7 +20,7 @@ interface MenuItemObj {
 const router = express.Router({mergeParams: true});
 
 router.get("/", async (req: Request, res: Response) => {
-  const restaurants: Restaurant[] = await Restaurant.findAll();
+  const restaurants: Restaurant[] = await Restaurant.findAll({include: [Menu]});
   res.send(restaurants);
 });
 

@@ -9,20 +9,43 @@
         integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://kit.fontawesome.com/ac2ffc8cd7.js" crossorigin="anonymous"></script>
 
 </head>
 
 <body>
 
-    <div id="root" class="restaurant-container"></div>
+    <div class="main-body">
+        <div class="sidebar">
+            <h1> Restaurants </h1>
+            <p>
+                These restaurants are a collection of the finest restaurants around. Each has been hand-picked by our
+                experts, and are regularly tested to see if they maintain our high
+                standards.
+            </p>
+
+            <p>
+                Feel free to <b>click on the menus</b> to display more information. We've also included a more detailed
+                breakdown of the menus, along with the prices for individual items.
+            </p>
+        </div>
+
+        <div id="restaurants" class="restaurant-container"></div>
+    </div>
+
+
+
+
+
+
 
     <script id="restaurant-template" type="text/x-handlebars-template">
         {{#each restaurants}}
-        <div class="restaurant-box" id="{{this.id}}" onclick=restaurantClicked(this.id)>
+        <div class="restaurant-box" id="{{this.id}}">
             <div class="item-text">
                 <h1>{{name}}</h1>
-                <ul id="{{this.id}}-menus">
-                    CLICK FOR MORE INFORMATION
+                <ul id="{{this.id}}-menus" class="menu-list">
+                    
                 </ul>
             </div>
             
@@ -34,10 +57,11 @@
     <script id="menu-template" type="text/x-handlebars-template">
         {{#each menus}}
         <li class="menu-box" id="{{this.id}}" onclick="menuClicked(this.id); event.cancelBubble=true;">
-            {{title}}
+            <b>{{this.title}}</b> 
+            <i class="fas fa-caret-right" id="{{this.id}}-caret"></i>
 
-            <ul id="{{this.id}}-items">
-                CLICK FOR DETAILED MENU
+            <ul id="{{this.id}}-items" class="item-list" onclick="event.cancelBubble=true">
+                
             </ul>
         </li>
         {{/each}}
@@ -48,41 +72,36 @@
         const restaurant_template = Handlebars.compile(restaurant_template_source);
 
         fetch("/restaurants").then((response) => {
-            response.json().then(contexts => {
+            response.json().then((contexts) => {
                 const html = restaurant_template({ restaurants: contexts });
-                document.getElementById("root").innerHTML = html;
+                document.getElementById("restaurants").innerHTML = html;
+                contexts.forEach(async (restaurant) => {
+                    await loadMenu(restaurant.id);
+                });
             });
         });
 
         let menus = [];
-        async function restaurantClicked(clickedId) {
-
-            if (document.getElementById(`${clickedId}-menus`).innerText === "CLICK FOR MORE INFORMATION") {
-                // implement extremely basic caching
-                if (menus.length === 0) {
-                    const response = await fetch("/menus");
-                    menus = await response.json();
-                }
-
-                const relevantMenus = menus.filter((value) => { return value.restaurantId.toString() === clickedId });
-
-                const menu_template_source = document.getElementById("menu-template").innerHTML;
-                const menu_template = Handlebars.compile(menu_template_source);
-
-                const html = menu_template({ menus: relevantMenus });
-
-                document.getElementById(`${clickedId}-menus`).innerHTML = html;
-            } else {
-                document.getElementById(`${clickedId}-menus`).innerText = "CLICK FOR MORE INFORMATION"
+        async function loadMenu(id) {
+            // implement extremely basic caching
+            if (menus.length === 0) {
+                const response = await fetch("/menus");
+                menus = await response.json();
             }
+
+            const relevantMenus = menus.filter((value) => { return value.restaurantId === id });
+
+            const menu_template_source = document.getElementById("menu-template").innerHTML;
+            const menu_template = Handlebars.compile(menu_template_source);
+
+            const html = menu_template({ menus: relevantMenus });
+
+            document.getElementById(`${id}-menus`).innerHTML = html;
         }
 
-        async function menuClicked(clickedId) {
-
-            console.log(document.getElementById(`${clickedId}-items`).innerText)
-
-            if (document.getElementById(`${clickedId}-items`).innerText === "CLICK FOR DETAILED MENU") {
-                const response = await fetch(`/menus/${clickedId}`);
+        async function menuClicked(id) {
+            if (document.getElementById(`${id}-items`).innerText === "") {
+                const response = await fetch(`/menus/${id}`);
                 const items = (await response.json()).items;
 
                 let html = "";
@@ -90,9 +109,11 @@
                 for (let i = 0; i < items.length; i++) {
                     html += `<li>${items[i].name} - £${items[i].price}</li>`;
                 }
-                document.getElementById(`${clickedId}-items`).innerHTML = html;
+                document.getElementById(`${id}-items`).innerHTML = html;
+                document.getElementById(`${id}-caret`).classList.toggle("fa-rotate-90");
             } else {
-                document.getElementById(`${clickedId}-items`).innerText = "CLICK FOR DETAILED MENU";
+                document.getElementById(`${id}-items`).innerText = "";
+                document.getElementById(`${id}-caret`).classList.toggle("fa-rotate-90");
             }
         }
 

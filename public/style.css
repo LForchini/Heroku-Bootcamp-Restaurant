@@ -1,3 +1,13 @@
+body {
+  background-color: #fffce8;
+  font-family: sans-serif;
+}
+
+.main-body {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+}
+
 .restaurant-container {
   display: grid;
   grid-template-columns: repeat(3, minmax(150px, 1fr));
@@ -5,11 +15,29 @@
 }
 
 .restaurant-box {
-  background-color: green;
+  background-color: #b8b42d;
   border-radius: 10px;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.menu-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.item-list {
+  list-style: none;
   padding-left: 10px;
+}
+
+.sidebar {
+  padding: 10px;
+}
+
+.fas {
+  display: block;
 }
 
 .item1 {
