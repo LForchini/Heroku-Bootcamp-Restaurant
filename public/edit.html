@@ -41,7 +41,12 @@
 
       <button id="create-menu" onclick="createNewMenu()">New Menu</button>
 
-      <button id="save-button" onclick="submit()">Save Edits</button>
+      <div id="navigation-buttons">
+        <button id="back-button" onclick="window.location.href = `/`;">
+          Back
+        </button>
+        <button id="save-button" onclick="submit()">Save Edits</button>
+      </div>
     </div>
 
     <script id="menu-template" type="text/x-handlebars-template">
