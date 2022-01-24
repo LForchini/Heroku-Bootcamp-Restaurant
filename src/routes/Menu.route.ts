@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import Menu from "../models/Menu.model";
 import { check, validationResult } from "express-validator";
 import MenuItem from "../models/MenuItem.model";
-import MenuItemRoute from "./MenuItem.route";
 import Restaurant from "../models/Restaurant.model";
 
 interface MenuObj {
@@ -41,7 +40,7 @@ router.post(
   "/",
   [
     check("title").not().isEmpty().trim().escape(),
-    check("title").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
+    check("title").isLength({ min: 1, max: 50 }),
     check("restaurantId").notEmpty(),
     check("restaurantId").isNumeric(),
   ],
@@ -52,15 +51,9 @@ router.post(
     }
     const raw_menu: MenuObj = req.body;
 
-    // One greater than the previous largest positionId
-    const positionId = ((await Restaurant.findByPk(raw_menu.restaurantId))?.menus
-      .map((menu: Menu) => menu.positionId)
-      .reduce((p: number, c: number) => Math.max(p, c)) || 0) + 1;
-
     const menu = new Menu({
       title: raw_menu.title,
       restaurantId: raw_menu.restaurantId,
-      positionId: positionId,
     });
     await menu.save();
     res.send(menu);
@@ -80,7 +73,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 router.put(
   "/:id",
-  [check("title").isAlpha("en-GB").isLength({ min: 1, max: 50 })],
+  [check("title").isLength({ min: 1, max: 50 })],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

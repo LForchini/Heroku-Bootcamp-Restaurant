@@ -29,7 +29,7 @@ router.post(
   "/",
   [
     check("name").not().isEmpty().trim().escape(),
-    check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
+    check("name").isLength({ min: 1, max: 50 }),
     check("price").not().isEmpty(),
     check("price").isNumeric(),
     check("menuId").notEmpty(),
@@ -42,17 +42,10 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
-    // One greater than the previous largest positionId
-    const positionId = ((await Menu.findByPk(raw_item.menuId))?.items
-      .map((item: MenuItem) => item.positionId)
-      .reduce((p: number, c: number) => Math.max(p, c)) || 0) + 1;
-
     const item = new MenuItem({
       name: raw_item.name,
       price: raw_item.price,
       menuId: raw_item.menuId,
-      positionId: positionId
     });
     await item.save();
     res.send(item);

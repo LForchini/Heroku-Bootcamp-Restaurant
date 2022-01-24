@@ -4,7 +4,7 @@
 
 <head>
 
-    <title>Handlebars Test</title>
+    <title>Restaurants</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"
         integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -33,23 +33,26 @@
         <div id="restaurants" class="restaurant-container"></div>
     </div>
 
-
-
-
-
-
-
     <script id="restaurant-template" type="text/x-handlebars-template">
         {{#each restaurants}}
-        <div class="restaurant-box" id="{{this.id}}">
-            <div class="item-text">
-                <h1>{{name}}</h1>
-                <ul id="{{this.id}}-menus" class="menu-list">
-                    
-                </ul>
-            </div>
+        <div id="restaurant-{{this.id}}">
+            <div class="restaurant-box">
+                
+                <div class="item-sidebar">
+                    <div class="item-text">
+                        <h1>{{name}}</h1>
+                        <ul id="{{this.id}}-menus" class="menu-list"></ul>
+                    </div>
+
+                    <div class="item-options">
+                        <i onclick="deleteRestaurant('{{this.id}}');" class="fas fa-trash"></i>
+                        <i onclick="updateRestaurant('{{this.id}}');" class="fas fa-pen"></i>
+                    </div>
+                </div>
+                
             
-            <img src={{this.image}} width=200 height=200>
+                <img src={{this.image}} width=200 height=200>
+            </div>
         </div>
         {{/each}}
     </script>
@@ -67,19 +70,42 @@
         {{/each}}
     </script>
 
-    <script>
-        const restaurant_template_source = document.getElementById("restaurant-template").innerHTML;
-        const restaurant_template = Handlebars.compile(restaurant_template_source);
+    <script id="edit-restaurant-template" type="text/x-handlebars-template">
+        <div id="restaurant-{{this.id}}">
+            <div class="restaurant-box">
+                
+                <div class="item-sidebar">
+                    <form>
+                        <input id="{{id}}-name-input" type=text value="{{this.name}}">
+                        <input id="{{id}}-image-input" type=text value="{{this.image}}">
+                    </form>
 
-        fetch("/restaurants").then((response) => {
-            response.json().then((contexts) => {
-                const html = restaurant_template({ restaurants: contexts });
-                document.getElementById("restaurants").innerHTML = html;
-                contexts.forEach(async (restaurant) => {
-                    await loadMenu(restaurant.id);
-                });
+                    <div class="item-options">
+                        <i onclick="undoEdits({{this.id}});" class="fas fa-times"></i>
+                        <i onclick="submitEdits({{this.id}});" class="fas fa-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+
+    <script>
+        loadRestaurants();
+
+        async function loadRestaurants() {
+            const restaurant_template_source = document.getElementById("restaurant-template").innerHTML;
+            const restaurant_template = Handlebars.compile(restaurant_template_source);
+
+            const response = await fetch("/restaurants")
+            const contexts = await response.json()
+            const html = restaurant_template({ restaurants: contexts });
+            document.getElementById("restaurants").innerHTML = html;
+            contexts.forEach(async (restaurant) => {
+                await loadMenu(restaurant.id);
             });
-        });
+        }
+
 
         let menus = [];
         async function loadMenu(id) {
@@ -117,6 +143,16 @@
             }
         }
 
+        async function deleteRestaurant(id) {
+            const response = await fetch(`/restaurants/${id}`, {
+                method: "DELETE"
+            });
+            loadRestaurants();
+        }
+
+        async function updateRestaurant(id) {
+            window.location.href = `./edit.html?id=${id}`
+        }
     </script>
 
 </body>

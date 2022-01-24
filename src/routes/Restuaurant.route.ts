@@ -76,12 +76,13 @@ router.put(
   "/:id",
   [
     check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
-    check("image").isURL().trim(),
+    check("image").isURL(),
   ],
   async (req: Request, res: Response) => {
     const restaurant: Restaurant | null = await Restaurant.findByPk(
       req.params.id
     );
+
     if (restaurant) {
       if (req.body.name) {
         restaurant.name = req.body.name;
@@ -97,14 +98,11 @@ router.put(
   }
 );
 
-router.put(":restaurantId/menus");
-router.put(":restaurantId/menus/:menuId");
-router.put(":restaurantId/menus/:menuId/items");
-router.put(":restaurantId/menus/:menuId/items/:itemId");
-router.put(":restaurantId/items");
-router.put(":restaurantId/items/:itemId");
-
-
-
+router.get(":restaurantId/menus");
+router.get(":restaurantId/menus/:menuId");
+router.get(":restaurantId/menus/:menuId/items");
+router.get(":restaurantId/menus/:menuId/items/:itemId");
+router.get(":restaurantId/items");
+router.get(":restaurantId/items/:itemId");
 
 export = router;

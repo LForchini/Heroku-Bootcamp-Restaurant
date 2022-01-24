@@ -36,8 +36,23 @@ body {
   padding: 10px;
 }
 
-.fas {
-  display: block;
+.item-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.item-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.item-options {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding-top: 5px;
 }
 
 .item1 {
@@ -80,10 +95,4 @@ body {
   border-radius: 10px;
   display: flex;
   padding-left: 10px;
-}
-
-.item-text {
-  display: flex;
-  flex-direction: column;
-  align-content: center;
 }

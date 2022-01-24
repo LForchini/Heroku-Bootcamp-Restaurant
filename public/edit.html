@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Editing Restaurant</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"
+      integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script
+      src="https://kit.fontawesome.com/ac2ffc8cd7.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <div id="content">
+      <h1>Editing a restaurant</h1>
+
+      <div id="restaurant-info">
+        <input
+          id="name-input"
+          type="text"
+          value="Loading..."
+          onchange="restaurantChanges.name = this.value;"
+        />
+        <input
+          id="image-input"
+          type="text"
+          value="Loading..."
+          onchange="updateImage(this.value); restaurantChanges.image = this.value;"
+        />
+        <img id="example-image" src="" width="200" height="200" />
+      </div>
+
+      <div id="menus"></div>
+      <div id="temp-menus"></div>
+
+      <button id="create-menu" onclick="createNewMenu()">New Menu</button>
+
+      <button id="save-button" onclick="submit()">Save Edits</button>
+    </div>
+
+    <script id="menu-template" type="text/x-handlebars-template">
+      {{#each menus}}
+        <div id="menu-{{this.id}}">
+          <div id="menu-box">
+            <input
+              id="menu-{{this.id}}-title"
+              type="text"
+              value="{{this.title}}"
+              onchange="if (!menuChanges[{{this.id}}-1]) menuChanges[{{this.id}}-1] = {}; menuChanges[{{this.id}}-1].title = this.value"
+            />
+            <i
+              onclick="if (!menuChanges[{{this.id}}-1]) menuChanges[{{this.id}}-1] = {}; menuChanges[{{this.id}}-1].delete = true; showDeletedMenu({{this.id}});"
+              class="fas fa-times"
+            ></i>
+            <button
+              id="menu-{{this.id}}-undo"
+              onclick="if (!menuChanges[{{this.id}}-1]) menuChanges[{{this.id}}-1] = {}; menuChanges[{{this.id}}-1].delete = false; undoDeletedMenu({{this.id}});"
+              hidden
+            >Undo</button>
+            <div id="menu-{{this.id}}-items"></div>
+            <div id="menu-{{this.id}}-temp-items"></div>
+            <button
+              id="menu-{{this.id}}-create-item"
+              onclick="createNewItem({{this.id}})"
+            >New Item</button>
+          </div>
+        </div>
+      {{/each}}
+    </script>
+
+    <script id="temp-menu-template" type="text/x-handlebars-template">
+      {{#each tempMenus}}
+        <div id="temp-menu-{{this.id}}">
+          <div id="temp-menu-box">
+            <input
+              id="menu-{{this.id}}-title"
+              type="text"
+              value="{{this.title}}"
+              onchange="if (!tempMenuChanges[{{this.id}}-1]) tempMenuChanges[{{this.id}}-1] = {}; tempMenuChanges[{{this.id}}-1].title = this.value"
+            />
+            <i
+              onclick="if (!tempMenuChanges[{{this.id}}-1]) tempMenuChanges[{{this.id}}-1] = {}; tempMenuChanges[{{this.id}}-1].delete = true; showDeletedTempMenu({{this.id}});"
+              class="fas fa-times"
+            ></i>
+            <div id="temp-menu-{{this.id}}-temp-items"></div>
+            <button
+              id="temp-menu-{{this.id}}-create-item"
+              onclick="createNewItem({{this.id}}, true)"
+            >New Item</button>
+          </div>
+        </div>
+      {{/each}}
+    </script>
+
+    <script id="item-template" type="text/x-handlebars-template">
+      {{#each items}}
+        <div id="item-{{this.id}}">
+          <div id="item-box">
+            <input
+              id="item-{{this.id}}-name"
+              type="text"
+              value="{{this.name}}"
+              onchange="if (!itemChanges[{{this.id}}-1]) itemChanges[{{this.id}}-1] = {}; itemChanges[{{this.id}}-1].name = this.value"
+            />
+            <input
+              id="item-{{this.id}}-price"
+              type="text"
+              value="{{this.price}}"
+              onchange="if (!itemChanges[{{this.id}}-1]) itemChanges[{{this.id}}-1] = {}; itemChanges[{{this.id}}-1].price = this.value"
+            />
+            <i
+              onclick="if (!itemChanges[{{this.id}}-1]) itemChanges[{{this.id}}-1] = {}; itemChanges[{{this.id}}-1].delete = true; showDeletedItem({{this.id}});"
+              class="fas fa-times"
+            ></i>
+            <button
+              id="item-{{this.id}}-undo"
+              onclick="if (!itemChanges[{{this.id}}-1]) itemChanges[{{this.id}}-1] = {}; itemChanges[{{this.id}}-1].delete = false; undoDeletedItem({{this.id}});"
+              hidden
+            >Undo</button>
+          </div>
+        </div>
+      {{/each}}
+    </script>
+
+    <script id="temp-item-template" type="text/x-handlebars-template">
+      {{#each tempItems}}
+        <div id="temp-item-{{this.id}}">
+          <div id="temp-item-box">
+            <input
+              id="temp-item-{{this.id}}-name"
+              type="text"
+              value="{{this.name}}"
+              onchange="if (!tempItemChanges[{{this.id}}-1]) tempItemChanges[{{this.id}}-1] = {}; tempItemChanges[{{this.id}}-1].name = this.value"
+            />
+            <input
+              id="item-{{this.id}}-price"
+              type="text"
+              value="{{this.price}}"
+              onchange="if (!tempItemChanges[{{this.id}}-1]) tempItemChanges[{{this.id}}-1] = {}; tempItemChanges[{{this.id}}-1].price = this.value"
+            />
+            <i
+              onclick="if (!tempItemChanges[{{this.id}}-1]) tempItemChanges[{{this.id}}-1] = {}; tempItemChanges[{{this.id}}-1].delete = true; showDeletedTempItem({{this.id}});"
+              class="fas fa-times"
+            ></i>
+          </div>
+        </div>
+      {{/each}}
+    </script>
+
+    <script>
+      let restaurant;
+
+      const restaurantChanges = {};
+      const menuChanges = [];
+      const tempMenuChanges = [];
+      const itemChanges = [];
+      const tempItemChanges = [];
+
+      async function initialise() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const restaurantId = urlParams.get("id");
+        const response = await fetch(`restaurants/${restaurantId}`);
+        restaurant = await response.json();
+
+        loadValues(restaurant);
+        initialiseMenus(restaurant);
+      }
+
+      async function loadValues(restaurant) {
+        document.getElementById("name-input").value = restaurant.name;
+        document.getElementById("image-input").value = restaurant.image;
+        document.getElementById("example-image").src = restaurant.image;
+      }
+
+      async function initialiseMenus(restaurant) {
+        const menuSource = document.getElementById("menu-template").innerHTML;
+        const menuTemplate = Handlebars.compile(menuSource);
+        const menuHTML = menuTemplate(restaurant);
+        document.getElementById("menus").innerHTML = menuHTML;
+        restaurant.menus.forEach(initialiseItems);
+      }
+
+      async function loadTempMenus() {
+        const tempMenuSource =
+          document.getElementById("temp-menu-template").innerHTML;
+        const tempMenuTemplate = Handlebars.compile(tempMenuSource);
+        const tempMenuHTML = tempMenuTemplate({
+          tempMenus: tempMenuChanges.filter((v) => !v.delete),
+        });
+        document.getElementById("temp-menus").innerHTML = tempMenuHTML;
+        for (let i = 0; i < tempMenuChanges.length; i++) {
+          loadTempItems(i + 1, true);
+        }
+      }
+
+      async function initialiseItems(menu) {
+        const response = await fetch(`menus/${menu.id}`);
+        const completeMenu = await response.json();
+        const itemSource = document.getElementById("item-template").innerHTML;
+        const itemTemplate = Handlebars.compile(itemSource);
+        const itemHTML = itemTemplate(completeMenu);
+        document.getElementById(`menu-${menu.id}-items`).innerHTML = itemHTML;
+        loadTempItems(menu.id);
+      }
+
+      async function loadTempItems(menuId, tempMenu = false) {
+        const tempItemSource =
+          document.getElementById("temp-item-template").innerHTML;
+        const tempItemTemplate = Handlebars.compile(tempItemSource);
+        const tempItemHTML = tempItemTemplate({
+          tempItems: tempItemChanges.filter(
+            (v) => v.menuId === menuId && v.onTempMenu == tempMenu
+          ),
+        });
+        document.getElementById(
+          `${tempMenu ? "temp-" : ""}menu-${menuId}-temp-items`
+        ).innerHTML = tempItemHTML;
+      }
+
+      async function updateImage(src) {
+        document.getElementById("example-image").src = src;
+      }
+
+      async function createNewItem(menuId, tempMenu = false) {
+        const tempItem = {
+          name: "New Item",
+          price: 0,
+          menuId: menuId,
+          onTempMenu: tempMenu,
+        };
+        tempItem.id = tempItemChanges.length + 1;
+        tempItemChanges.push(tempItem);
+        loadTempItems(menuId, tempMenu);
+      }
+
+      async function createNewMenu() {
+        const tempMenu = { title: "New Menu", restaurantId: restaurant.id };
+        tempMenu.id = tempItemChanges.length + 1;
+        tempMenuChanges.push(tempMenu);
+        loadTempMenus();
+        createNewItem(tempMenu.id, true);
+      }
+
+      async function showDeletedMenu(menuId) {
+        document.getElementById(`menu-${menuId}-title`).value = "DELETED";
+        document.getElementById(`menu-${menuId}-undo`).hidden = false;
+        document.getElementById(`menu-${menuId}-items`).innerHTML = "";
+        document.getElementById(`menu-${menuId}-temp-items`).innerHTML = "";
+        document.getElementById(`menu-${menuId}-create-item`).hidden = true;
+      }
+
+      async function showDeletedTempMenu(tempMenuId) {
+        const elem = document.getElementById(`temp-menu-${tempMenuId}`);
+        elem.parentNode.removeChild(elem);
+        return false;
+      }
+
+      async function showDeletedItem(itemId) {
+        document.getElementById(`item-${itemId}-name`).value = "DELETED";
+        document.getElementById(`item-${itemId}-price`).value = "DELETED";
+        document.getElementById(`item-${itemId}-undo`).hidden = false;
+      }
+
+      async function showDeletedTempItem(tempItemId) {
+        const elem = document.getElementById(`temp-item-${tempItemId}`);
+        elem.parentNode.removeChild(elem);
+        return false;
+      }
+
+      async function undoDeletedMenu(menuId) {
+        const response = await fetch(`/menus/${menuId}`);
+        const menu = await response.json();
+        const menuSource = document.getElementById("menu-template").innerHTML;
+        const menuTemplate = Handlebars.compile(menuSource);
+        const menuHTML = menuTemplate({ menus: [menu] });
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = menuHTML;
+        document.getElementById(`menu-${menuId}`).innerHTML =
+          tempElement.children[`menu-${menuId}`].innerHTML;
+        initialiseItems(menu);
+      }
+
+      async function undoDeletedItem(itemId) {
+        const response = await fetch(`/items/${itemId}`);
+        const item = await response.json();
+        const itemSource = document.getElementById("item-template").innerHTML;
+        const itemTemplate = Handlebars.compile(itemSource);
+        const itemHTML = itemTemplate({ items: [item] });
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = itemHTML;
+        document.getElementById(`item-${itemId}`).innerHTML =
+          tempElement.children[`item-${itemId}`].innerHTML;
+      }
+
+      async function submit() {
+        if (restaurantChanges) {
+          fetch(`/restaurants/${restaurant.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(restaurantChanges),
+          });
+        }
+
+        for (let i = 0; i < menuChanges.length; i++) {
+          const menuChange = menuChanges[i];
+
+          if (menuChange) {
+            if (menuChange.delete) {
+              fetch(`/menus/${i + 1}`, { method: "DELETE" });
+            } else {
+              fetch(`/menus/${i + 1}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(menuChange),
+              });
+            }
+          }
+        }
+
+        for (let i = 0; i < itemChanges.length; i++) {
+          const itemChange = itemChanges[i];
+
+          if (itemChange) {
+            if (itemChange.delete) {
+              fetch(`/items/${i + 1}`, { method: "DELETE" });
+            } else {
+              fetch(`/items/${i + 1}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(itemChange),
+              });
+            }
+          }
+        }
+
+        const mapping = [];
+
+        for (let i = 0; i < tempMenuChanges.length; i++) {
+          const tempMenuChange = tempMenuChanges[i];
+
+          if (tempMenuChange) {
+            if (!tempMenuChange.delete) {
+              const response = await fetch(`/menus`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(tempMenuChange),
+              });
+              const menu = await response.json();
+              console.log(menu);
+              mapping[i + 1] = menu.id;
+            }
+          }
+        }
+
+        for (let i = 0; i < tempItemChanges.length; i++) {
+          const tempItemChange = tempItemChanges[i];
+
+          if (tempItemChange) {
+            if (!tempItemChange.delete) {
+              console.log(mapping);
+              if (tempItemChange.onTempMenu)
+                tempItemChange.menuId = mapping[tempItemChange.menuId];
+              fetch(`/items`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(tempItemChange),
+              });
+            }
+          }
+        }
+
+        window.location.href = `/`;
+      }
+
+      initialise();
+    </script>
+  </body>
+</html>
