@@ -8,7 +8,7 @@ import MenuItemRoute from "./src/routes/MenuItem.route";
 const app = express();
 const PORT: string | number = process.env.PORT || 3000;
 
-app.use("/", express.static('public'));
+app.use("/", express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // app.use((req: Request, res: Response, next: NextFunction) => {
@@ -20,9 +20,8 @@ app.use("/restaurants", RestaurantRoute);
 app.use("/menus", MenuRoute);
 app.use("/items", MenuItemRoute);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Started listening on port ${PORT}`);
-  loadSeed().then(() => {
-    console.log(`Loaded seed database values`);
-  });
+  await loadSeed();
+  console.log(`Loaded seed database values`);
 });
