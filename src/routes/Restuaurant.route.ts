@@ -17,10 +17,12 @@ interface MenuItemObj {
   price: number;
 }
 
-const router = express.Router({mergeParams: true});
+const router = express.Router({ mergeParams: true });
 
 router.get("/", async (req: Request, res: Response) => {
-  const restaurants: Restaurant[] = await Restaurant.findAll({include: [Menu]});
+  const restaurants: Restaurant[] = await Restaurant.findAll({
+    include: [Menu],
+  });
   res.send(restaurants);
 });
 
@@ -40,7 +42,7 @@ router.post(
   "/",
   [
     check("name").not().isEmpty().trim().escape(),
-    check("name").isAlpha("en-GB").isLength({ min: 1, max: 50 }),
+    check("name").isLength({ min: 1, max: 50 }),
     check("image").isURL().trim(),
   ],
   async (req: Request, res: Response) => {
