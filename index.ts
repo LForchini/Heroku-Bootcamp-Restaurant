@@ -1,5 +1,5 @@
 import { loadSeed } from "./src/sequelize";
-import express, {Request, Response, NextFunction} from "express";
+import express from "express";
 
 import RestaurantRoute from "./src/routes/Restuaurant.route";
 import MenuRoute from "./src/routes/Menu.route";
